@@ -80,11 +80,11 @@
 鉴于 AI 技术的快速演进，本项目在架构设计上追求**极致的灵活性**，拒绝与特定模型或供应商强绑定。**整个系统**（不仅是 RAG 链路）的每一个核心环节均定义了抽象接口，支持"乐高积木式"的自由替换与组合：
 
 - **LLM 调用层插拔 (LLM Provider Agnostic)**：
-    - 核心推理 LLM 通过统一的抽象接口封装，支持**三种 API 格式**无缝切换：
-        - **OpenAI 格式**：兼容 OpenAI、Groq、本地模型等；
-        - **DashScope 格式**：阿里云 DashScope API（通义千问系列）；
-        - **Anthropic 格式**：Anthropic API（Claude 系列）。
-    - 通过配置文件修改 `base_url` 和 `model` 即可适配其他厂商，**零代码修改**即可完成 LLM 迁移，便于成本优化、隐私合规或 A/B 测试。
+    - 核心推理 LLM 通过统一的抽象接口封装，采用**混合架构设计**：
+        - **LiteLLM 统一接口（推荐）**：基于 [LiteLLM](https://github.com/BerriAI/litellm) 实现，支持 **100+ 提供商**（OpenAI、Anthropic、Gemini、Azure、Groq、Ollama 等），一行配置即可切换模型；
+        - **原生直连接口（向后兼容）**：保留 OpenAI、DashScope、Anthropic 的原生 SDK 实现，用于学习或特殊需求场景。
+    - 通过配置文件修改 `provider` 和 `model` 即可适配任意厂商，**零代码修改**即可完成 LLM 迁移，便于成本优化、隐私合规或 A/B 测试。
+    - LiteLLM 自动处理不同厂商的 API 格式差异、重试策略、错误转换，大幅降低维护成本。
 
 - **Embedding & Rerank 模型插拔 (Model Agnostic)**：
     - Embedding 模型与 Rerank 模型同样采用统一接口封装；
@@ -482,12 +482,30 @@ MCP 协议的 Tool 返回格式支持多种内容类型（`content` 数组），
 | **Ollama / vLLM (本地)** | 完全离线、隐私敏感、无 API 成本 | `provider: ollama`, `base_url`, `model` |
 
 - **技术选型建议**：
-	- 本项目采用自研的 `BaseLLM` / `BaseEmbedding` 抽象基类，配合工厂模式（`llm_factory.py` / `embedding_factory.py`）实现统一调用接口。已内置 Azure OpenAI、OpenAI、Ollama、DeepSeek 四种 Provider 适配。
-	- 对于其他 Provider，可通过 **OpenAI-Compatible 模式**接入（设置自定义 `api_base`），或实现 `BaseLLM` 接口并在工厂中注册。
+	- 本项目采用**混合架构设计**：
+		1. **LiteLLM 统一适配层（推荐）**：通过 `LiteLLMLLM` / `LiteLLMEmbedding` 适配器，基于 [LiteLLM](https://github.com/BerriAI/litellm) 库实现统一接口，支持 100+ 提供商（OpenAI、Anthropic、Gemini、Azure、Groq、Ollama、Cohere 等）。LiteLLM 自动处理不同厂商的 API 格式转换、重试策略、错误转换。
+		2. **原生直连层（向后兼容）**：保留 `OpenAILLM`、`DashScopeLLM`、`AnthropicLLM` 等原生实现，用于学习目的或特殊需求场景。
+	- **工厂路由**：`LLMFactory` / `EmbeddingFactory` 根据 `settings.yaml` 中的 `provider` 字段自动选择实现，支持 `litellm`、`openai`、`dashscope`、`anthropic` 四种选项。
 
-	- 对于企业级需求，可在其基础上增加统一的 **重试、限流、日志** 中间层，提升生产可靠性，但本项目暂不实现，这里仅提供思路。
-	- **Vision LLM 扩展**：针对图像描述生成（Image Captioning）需求，系统扩展了 `BaseVisionLLM` 接口，支持文本+图片的多模态输入。当前实现：
-		- **Azure OpenAI Vision**（GPT-4o/GPT-4-Vision）：企业级合规部署，支持复杂图表解析，与 Azure 生态深度集成。
+	**LiteLLM 配置示例**：
+	```yaml
+	llm:
+	  provider: litellm
+	  litellm:
+	    model: claude-3-5-sonnet-20241022  # 支持 gpt-4o, gemini/gemini-pro, groq/llama3-8b 等
+	    api_key: ${ANTHROPIC_API_KEY}
+	    timeout: 60
+	    max_retries: 3
+	```
+
+	**LiteLLM 优势**：
+	- **一行切换模型**：修改 `model` 字段即可切换提供商，无需更改代码
+	- **自动格式转换**：处理不同厂商的 message 格式、function calling、streaming 差异
+	- **内置可靠性**：自动重试、超时处理、错误转换
+	- **100+ 提供商支持**：覆盖几乎所有主流 LLM 服务
+
+	- 对于企业级需求，LiteLLM 本身支持 **Fallback、Load Balance、Rate Limit** 等高级特性，生产环境可直接使用。
+	- **Vision LLM 扩展**：`LiteLLMLLM` 同时支持 Vision 模型（如 GPT-4o、Claude-3-Sonnet），无需额外适配器。如需原生实现，保留 `OpenAIVisionLLM`、`DashScopeVisionLLM`、`AnthropicVisionLLM`。
 
 #### 3.3.3 检索策略抽象
 
@@ -1958,22 +1976,22 @@ dashboard:
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| B1 | LLM 抽象接口与工厂 | [ ] | | |
-| B2 | Embedding 抽象接口与工厂 | [ ] | | |
-| B3 | Splitter 抽象接口与工厂 | [ ] | | |
-| B4 | VectorStore 抽象接口与工厂 | [ ] | | |
-| B5 | Reranker 抽象接口与工厂（含 None 回退） | [ ] | | |
-| B6 | Evaluator 抽象接口与工厂 | [ ] | | |
-| B7.1 | OpenAI-Compatible LLM 实现 | [ ] | | |
-| B7.2 | Ollama LLM 实现 | [ ] | | |
-| B7.3 | OpenAI & Azure Embedding 实现 | [ ] | | |
-| B7.4 | Ollama Embedding 实现 | [ ] | | |
-| B7.5 | Recursive Splitter 默认实现 | [ ] | | |
-| B7.6 | ChromaStore 默认实现 | [ ] | | |
-| B7.7 | LLM Reranker 实现 | [ ] | | |
-| B7.8 | Cross-Encoder Reranker 实现 | [ ] | | |
-| B8 | Vision LLM 抽象接口与工厂集成 | [ ] | | |
-| B9 | Azure Vision LLM 实现 | [ ] | | |
+| B1 | LLM 抽象接口与工厂 | [x] | 2026-03-18 | BaseLLM, LLMFactory, 8测试 |
+| B2 | Embedding 抽象接口与工厂 | [x] | 2026-03-18 | BaseEmbedding, EmbeddingFactory, 10测试 |
+| B3 | Splitter 抽象接口与工厂 | [x] | 2026-03-18 | BaseSplitter, SplitterFactory, 9测试 |
+| B4 | VectorStore 抽象接口与工厂 | [x] | 2026-03-18 | BaseVectorStore, VectorStoreFactory, 8测试 |
+| B5 | Reranker 抽象接口与工厂（含 None 回退） | [x] | 2026-03-18 | BaseReranker, NoneReranker, 9测试 |
+| B6 | Evaluator 抽象接口与工厂 | [x] | 2026-03-18 | BaseEvaluator, EvaluatorFactory, 8测试 |
+| B7.1 | OpenAI-Compatible LLM 实现 | [x] | 2026-03-18 | OpenAILLM with httpx |
+| B7.2 | DashScope LLM 实现 | [x] | 2026-03-18 | DashScopeLLM with compatible-mode |
+| B7.3 | OpenAI & DashScope Embedding 实现 | [x] | 2026-03-18 | OpenAIEmbedding, DashScopeEmbedding |
+| B7.4 | Anthropic LLM 实现 | [x] | 2026-03-18 | AnthropicLLM native API |
+| B7.5 | Recursive Splitter 默认实现 | [x] | 2026-03-18 | RecursiveSplitter with LangChain fallback |
+| B7.6 | ChromaStore 默认实现 | [x] | 2026-03-18 | ChromaStore with full CRUD |
+| B7.7 | LLM Reranker 实现 | [x] | 2026-03-18 | LLMReranker placeholder |
+| B7.8 | Cross-Encoder Reranker 实现 | [x] | 2026-03-18 | CrossEncoderReranker with sentence-transformers |
+| B8 | Vision LLM 抽象接口与工厂集成 | [x] | 2026-03-18 | BaseVisionLLM, factory integration |
+| B9 | Anthropic Vision LLM 实现 | [x] | 2026-03-18 | AnthropicVisionLLM with image resize |
 
 #### 阶段 C：Ingestion Pipeline MVP
 

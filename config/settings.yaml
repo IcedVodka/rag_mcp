@@ -2,18 +2,31 @@
 # 智能知识库 - 主配置文件
 #
 # API 格式说明：
+# - litellm: 推荐 - 统一接口，支持 100+ 提供商 (OpenAI, Claude, Gemini, Groq, Ollama...)
 # - openai: 兼容 OpenAI API 格式 (OpenAI, Groq, 本地模型等)
 # - dashscope: 阿里云 DashScope API 格式 (通义千问系列)
 # - anthropic: Anthropic API 格式 (Claude 系列)
-# 其他厂商模型可通过修改 base_url 和 model 来适配
 
 # ==================== LLM 配置 ====================
 llm:
-  # Provider: openai, dashscope, anthropic
-  # 通过修改对应 provider 下的 base_url 和 model 可适配其他厂商
-  provider: anthropic
+  # Provider: litellm (推荐), openai, dashscope, anthropic
+  # litellm 支持 100+ 提供商，通过 model 字段指定具体模型
+  provider: litellm
+  
+  # LiteLLM 配置 (推荐)
+  # 支持模型格式: "provider/model" 或直接 "model_name"
+  # 示例: "gpt-4o", "claude-3-5-sonnet-20241022", "gemini/gemini-pro", "groq/llama3-8b-8192"
+  litellm:
+    model: claude-3-5-sonnet-20241022  # 或 gpt-4o, gemini/gemini-pro
+    api_key: ${ANTHROPIC_API_KEY}  # 根据模型自动选择对应 API key
+    base_url: null  # 可选，用于自定义端点或本地模型
+    timeout: 60
+    max_retries: 3
+    temperature: 0.7
+    max_tokens: null
   
   # OpenAI 格式配置 (兼容 OpenAI, Groq, 本地模型等)
+  # 保留向后兼容，如需直接使用原生 OpenAI SDK 时使用
   openai:
     api_key: ${OPENAI_API_KEY}
     model: gpt-4o-mini
@@ -39,9 +52,18 @@ llm:
 
 # ==================== Vision LLM 配置 ====================
 vision_llm:
-  # Provider: openai, dashscope, anthropic
-  provider: anthropic
+  # Provider: litellm (推荐), openai, dashscope, anthropic
+  provider: litellm
   enabled: false
+  
+  # LiteLLM 配置 (推荐)
+  litellm:
+    model: claude-3-5-sonnet-20241022  # 支持视觉的模型
+    api_key: ${ANTHROPIC_API_KEY}
+    base_url: null
+    max_image_size: 2048
+    timeout: 60
+    max_retries: 3
   
   openai:
     api_key: ${OPENAI_API_KEY}
@@ -69,10 +91,21 @@ vision_llm:
 
 # ==================== Embedding 配置 ====================
 embedding:
-  # Provider: openai, dashscope, anthropic
-  # 注意: anthropic 不提供 embedding 服务，如需使用请配置 openai 或 dashscope
-  provider: dashscope
+  # Provider: litellm (推荐), openai, dashscope
+  # litellm 支持 OpenAI, Azure, Cohere 等多个 embedding 提供商
+  provider: litellm
   
+  # LiteLLM 配置 (推荐)
+  litellm:
+    model: text-embedding-v4  # OpenAI: text-embedding-3-small, DashScope: text-embedding-v4
+    api_key: ${DASHSCOPE_API_KEY}
+    base_url: null  # 可选
+    dimensions: 1536
+    batch_size: 25
+    timeout: 60
+    max_retries: 3
+  
+  # OpenAI 格式配置
   openai:
     api_key: ${OPENAI_API_KEY}
     model: text-embedding-3-small
@@ -82,6 +115,7 @@ embedding:
     timeout: 30
     max_retries: 3
   
+  # DashScope 格式配置
   dashscope:
     api_key: ${DASHSCOPE_API_KEY}
     model: text-embedding-v4
@@ -89,16 +123,6 @@ embedding:
     dimensions: 1536
     batch_size: 25  # DashScope 限制单批次最多25条
     timeout: 60
-    max_retries: 3
-  
-  anthropic:
-    # Anthropic 不提供 embedding 服务，此配置仅作占位
-    api_key: ${ANTHROPIC_API_KEY}
-    model: ""
-    base_url: https://api.anthropic.com/v1
-    dimensions: 0
-    batch_size: 0
-    timeout: 30
     max_retries: 3
 
 # ==================== Vector Store 配置 ====================

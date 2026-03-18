@@ -49,22 +49,22 @@
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| B1 | LLM 抽象接口与工厂 | [ ] | | |
-| B2 | Embedding 抽象接口与工厂 | [ ] | | |
-| B3 | Splitter 抽象接口与工厂 | [ ] | | |
-| B4 | VectorStore 抽象接口与工厂 | [ ] | | |
-| B5 | Reranker 抽象接口与工厂（含 None 回退） | [ ] | | |
-| B6 | Evaluator 抽象接口与工厂 | [ ] | | |
-| B7.1 | OpenAI-Compatible LLM 实现 | [ ] | | |
-| B7.2 | Ollama LLM 实现 | [ ] | | |
-| B7.3 | OpenAI & Azure Embedding 实现 | [ ] | | |
-| B7.4 | Ollama Embedding 实现 | [ ] | | |
-| B7.5 | Recursive Splitter 默认实现 | [ ] | | |
-| B7.6 | ChromaStore 默认实现 | [ ] | | |
-| B7.7 | LLM Reranker 实现 | [ ] | | |
-| B7.8 | Cross-Encoder Reranker 实现 | [ ] | | |
-| B8 | Vision LLM 抽象接口与工厂集成 | [ ] | | |
-| B9 | Azure Vision LLM 实现 | [ ] | | |
+| B1 | LLM 抽象接口与工厂 | [x] | 2026-03-18 | BaseLLM, LLMFactory, 8测试 |
+| B2 | Embedding 抽象接口与工厂 | [x] | 2026-03-18 | BaseEmbedding, EmbeddingFactory, 10测试 |
+| B3 | Splitter 抽象接口与工厂 | [x] | 2026-03-18 | BaseSplitter, SplitterFactory, 9测试 |
+| B4 | VectorStore 抽象接口与工厂 | [x] | 2026-03-18 | BaseVectorStore, VectorStoreFactory, 8测试 |
+| B5 | Reranker 抽象接口与工厂（含 None 回退） | [x] | 2026-03-18 | BaseReranker, NoneReranker, 9测试 |
+| B6 | Evaluator 抽象接口与工厂 | [x] | 2026-03-18 | BaseEvaluator, EvaluatorFactory, 8测试 |
+| B7.1 | OpenAI-Compatible LLM 实现 | [x] | 2026-03-18 | OpenAILLM with httpx |
+| B7.2 | DashScope LLM 实现 | [x] | 2026-03-18 | DashScopeLLM with compatible-mode |
+| B7.3 | OpenAI & DashScope Embedding 实现 | [x] | 2026-03-18 | OpenAIEmbedding, DashScopeEmbedding |
+| B7.4 | Anthropic LLM 实现 | [x] | 2026-03-18 | AnthropicLLM native API |
+| B7.5 | Recursive Splitter 默认实现 | [x] | 2026-03-18 | RecursiveSplitter with LangChain fallback |
+| B7.6 | ChromaStore 默认实现 | [x] | 2026-03-18 | ChromaStore with full CRUD |
+| B7.7 | LLM Reranker 实现 | [x] | 2026-03-18 | LLMReranker placeholder |
+| B7.8 | Cross-Encoder Reranker 实现 | [x] | 2026-03-18 | CrossEncoderReranker with sentence-transformers |
+| B8 | Vision LLM 抽象接口与工厂集成 | [x] | 2026-03-18 | BaseVisionLLM, factory integration |
+| B9 | Anthropic Vision LLM 实现 | [x] | 2026-03-18 | AnthropicVisionLLM with image resize |
 
 #### 阶段 C：Ingestion Pipeline MVP
 

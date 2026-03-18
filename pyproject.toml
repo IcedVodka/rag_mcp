@@ -36,6 +36,7 @@ dependencies = [
     "markitdown>=0.0.1a3",
     "langchain>=0.2.0",
     "langchain-text-splitters>=0.2.0",
+    "litellm>=1.60.0",
 ]
 
 [project.optional-dependencies]
