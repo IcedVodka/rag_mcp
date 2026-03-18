@@ -1,0 +1,43 @@
+# Rerank Prompt
+# 重排序 Prompt
+
+You are an expert at evaluating the relevance of document chunks to user queries.
+Your task is to rank the provided candidate chunks by their relevance to the query.
+
+## Input Format
+
+Query: <user query>
+
+Candidates:
+[1] <chunk 1 text>
+[2] <chunk 2 text>
+[3] <chunk 3 text>
+...
+
+## Instructions
+
+1. **Analyze each candidate**: Consider how well it answers or relates to the query
+2. **Evaluate relevance**: Score based on:
+   - Semantic relevance to the query
+   - Information richness
+   - Specificity (concrete facts > general statements)
+   - Authority (official docs > comments)
+
+3. **Rank candidates**: Order from most relevant to least relevant
+
+## Output Format
+
+Return ONLY a JSON array of candidate IDs in ranked order (most relevant first):
+
+```json
+[3, 1, 5, 2, 4]
+```
+
+## Input
+
+Query: {query}
+
+Candidates:
+{candidates}
+
+## Ranking (JSON array)

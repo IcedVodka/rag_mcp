@@ -1,0 +1,46 @@
+# Chunk Refinement Prompt
+# 文本块优化 Prompt
+
+You are a document processing expert. Your task is to refine and improve the readability of text chunks extracted from documents while preserving all meaningful content.
+
+## Input
+
+You will receive a text chunk that may contain:
+- Page headers and footers
+- Excessive whitespace or line breaks
+- OCR errors or formatting artifacts
+- HTML/Markdown formatting markers
+- Broken sentences at page boundaries
+
+## Instructions
+
+1. **Clean up formatting**:
+   - Remove page headers, footers, and page numbers
+   - Normalize excessive whitespace and line breaks
+   - Preserve meaningful paragraph breaks
+   - Keep code block formatting intact
+
+2. **Fix OCR errors** (if obvious):
+   - Correct common OCR mistakes (e.g., "0" vs "O", "1" vs "l")
+   - Fix broken words at line endings when context is clear
+
+3. **Preserve content**:
+   - DO NOT summarize or remove meaningful content
+   - Keep all technical terms, names, and identifiers
+   - Preserve [IMAGE: xxx] placeholders
+   - Maintain code snippets exactly as written
+
+4. **Improve readability**:
+   - Ensure sentences are complete
+   - Fix awkward line breaks
+   - Maintain logical paragraph structure
+
+## Output
+
+Return ONLY the refined text, without any explanation or markdown code blocks.
+
+## Input Text
+
+{text}
+
+## Refined Text

@@ -1,0 +1,255 @@
+# Smart Knowledge Hub - Configuration File
+# 智能知识库 - 主配置文件
+#
+# API 格式说明：
+# - openai: 兼容 OpenAI API 格式 (OpenAI, Groq, 本地模型等)
+# - dashscope: 阿里云 DashScope API 格式 (通义千问系列)
+# - anthropic: Anthropic API 格式 (Claude 系列)
+# 其他厂商模型可通过修改 base_url 和 model 来适配
+
+# ==================== LLM 配置 ====================
+llm:
+  # Provider: openai, dashscope, anthropic
+  # 通过修改对应 provider 下的 base_url 和 model 可适配其他厂商
+  provider: anthropic
+  
+  # OpenAI 格式配置 (兼容 OpenAI, Groq, 本地模型等)
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    model: gpt-4o-mini
+    base_url: https://api.openai.com/v1
+    timeout: 30
+    max_retries: 3
+  
+  # DashScope 格式配置 (阿里云通义千问)
+  dashscope:
+    api_key: ${DASHSCOPE_API_KEY}
+    model: qwen-max-latest
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    timeout: 60
+    max_retries: 3
+  
+  # Anthropic 格式配置 (Claude 系列)
+  anthropic:
+    api_key: ${ANTHROPIC_API_KEY}
+    model: claude-3-5-sonnet-20241022
+    base_url: https://api.anthropic.com/v1
+    timeout: 60
+    max_retries: 3
+
+# ==================== Vision LLM 配置 ====================
+vision_llm:
+  # Provider: openai, dashscope, anthropic
+  provider: anthropic
+  enabled: false
+  
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    model: gpt-4o
+    base_url: https://api.openai.com/v1
+    max_image_size: 2048
+    timeout: 30
+    max_retries: 3
+  
+  dashscope:
+    api_key: ${DASHSCOPE_API_KEY}
+    model: qwen-vl-max
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    max_image_size: 2048
+    timeout: 60
+    max_retries: 3
+  
+  anthropic:
+    api_key: ${ANTHROPIC_API_KEY}
+    model: claude-3-5-sonnet-20241022
+    base_url: https://api.anthropic.com/v1
+    max_image_size: 2048
+    timeout: 60
+    max_retries: 3
+
+# ==================== Embedding 配置 ====================
+embedding:
+  # Provider: openai, dashscope, anthropic
+  # 注意: anthropic 不提供 embedding 服务，如需使用请配置 openai 或 dashscope
+  provider: dashscope
+  
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    model: text-embedding-3-small
+    base_url: https://api.openai.com/v1
+    dimensions: 1536
+    batch_size: 100
+    timeout: 30
+    max_retries: 3
+  
+  dashscope:
+    api_key: ${DASHSCOPE_API_KEY}
+    model: text-embedding-v4
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    dimensions: 1536
+    batch_size: 25  # DashScope 限制单批次最多25条
+    timeout: 60
+    max_retries: 3
+  
+  anthropic:
+    # Anthropic 不提供 embedding 服务，此配置仅作占位
+    api_key: ${ANTHROPIC_API_KEY}
+    model: ""
+    base_url: https://api.anthropic.com/v1
+    dimensions: 0
+    batch_size: 0
+    timeout: 30
+    max_retries: 3
+
+# ==================== Vector Store 配置 ====================
+vector_store:
+  # Provider: chroma, qdrant, milvus
+  provider: chroma
+  
+  chroma:
+    persist_directory: data/db/chroma
+    collection_name: default
+    distance_function: cosine
+    
+  qdrant:
+    url: http://localhost:6333
+    api_key: ${QDRANT_API_KEY}
+    collection_name: default
+
+# ==================== Splitter 配置 ====================
+splitter:
+  # Strategy: recursive, semantic, fixed
+  strategy: recursive
+  
+  recursive:
+    chunk_size: 1000
+    chunk_overlap: 200
+    separators:
+      - "\n\n"
+      - "\n"
+      - ". "
+      - "? "
+      - "! "
+      - " "
+      - ""
+    keep_separator: true
+
+# ==================== Retrieval 配置 ====================
+retrieval:
+  # Dense retrieval settings
+  dense:
+    top_k: 20
+    
+  # Sparse retrieval settings (BM25)
+  sparse:
+    top_k: 20
+    
+  # Hybrid search settings
+  hybrid:
+    # RRF (Reciprocal Rank Fusion) parameter
+    rrf_k: 60
+    # Weights for dense and sparse (should sum to 1.0)
+    dense_weight: 0.5
+    sparse_weight: 0.5
+    # Final top_k after fusion
+    top_k: 10
+
+# ==================== Reranker 配置 ====================
+reranker:
+  # Backend: none, cross_encoder, llm
+  backend: none
+  
+  cross_encoder:
+    model: cross-encoder/ms-marco-MiniLM-L-6-v2
+    device: cpu
+    max_length: 512
+    batch_size: 32
+    
+  llm:
+    prompt_path: config/prompts/rerank.txt
+    timeout: 10
+    max_candidates: 10
+
+# ==================== Ingestion 配置 ====================
+ingestion:
+  # Batch processing
+  batch_size: 32
+  
+  # File integrity check
+  integrity_check:
+    enabled: true
+    db_path: data/db/ingestion_history.db
+  
+  # Image processing
+  images:
+    enabled: true
+    storage_path: data/images
+    max_size: 2048
+    formats: ["png", "jpg", "jpeg"]
+  
+  # Chunk refinement
+  chunk_refiner:
+    enabled: true
+    use_llm: false
+    prompt_path: config/prompts/chunk_refinement.txt
+  
+  # Metadata enrichment
+  metadata_enricher:
+    enabled: true
+    use_llm: false
+  
+  # Image captioning
+  image_captioner:
+    enabled: false
+    prompt_path: config/prompts/image_captioning.txt
+
+# ==================== BM25 配置 ====================
+bm25:
+  index_path: data/db/bm25
+  k1: 1.5
+  b: 0.75
+
+# ==================== Evaluation 配置 ====================
+evaluation:
+  # Provider: ragas, deepeval, custom
+  provider: custom
+  
+  ragas:
+    metrics:
+      - faithfulness
+      - answer_relevancy
+      - context_precision
+      - context_recall
+  
+  custom:
+    metrics:
+      - hit_rate
+      - mrr
+      - ndcg
+
+# ==================== Observability 配置 ====================
+observability:
+  # Logging
+  logging:
+    level: INFO
+    format: json
+    file: logs/app.log
+  
+  # Tracing
+  tracing:
+    enabled: true
+    output_path: logs/traces.jsonl
+    max_size_mb: 100
+  
+  # Dashboard
+  dashboard:
+    enabled: true
+    host: localhost
+    port: 8501
+
+# ==================== Storage 配置 ====================
+storage:
+  data_dir: data
+  db_dir: data/db
+  image_dir: data/images
+  document_dir: data/documents

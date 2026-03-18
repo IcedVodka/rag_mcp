@@ -17,12 +17,11 @@
 鉴于 AI 技术的快速演进，本项目在架构设计上追求**极致的灵活性**，拒绝与特定模型或供应商强绑定。**整个系统**（不仅是 RAG 链路）的每一个核心环节均定义了抽象接口，支持"乐高积木式"的自由替换与组合：
 
 - **LLM 调用层插拔 (LLM Provider Agnostic)**：
-    - 核心推理 LLM 通过统一的抽象接口封装，支持**多协议**无缝切换：
-        - **Azure OpenAI**：企业级 Azure 云端服务，符合合规与安全要求；
-        - **OpenAI API**：直接对接 OpenAI 官方接口；
-        - **本地模型**：支持 Ollama、vLLM、LM Studio 等本地私有化部署方案；
-        - **其他云服务**：DeepSeek、Anthropic Claude 等第三方 API。
-    - 通过配置文件一键切换后端，**零代码修改**即可完成 LLM 迁移，便于成本优化、隐私合规或 A/B 测试。
+    - 核心推理 LLM 通过统一的抽象接口封装，支持**三种 API 格式**无缝切换：
+        - **OpenAI 格式**：兼容 OpenAI、Groq、本地模型等；
+        - **DashScope 格式**：阿里云 DashScope API（通义千问系列）；
+        - **Anthropic 格式**：Anthropic API（Claude 系列）。
+    - 通过配置文件修改 `base_url` 和 `model` 即可适配其他厂商，**零代码修改**即可完成 LLM 迁移，便于成本优化、隐私合规或 A/B 测试。
 
 - **Embedding & Rerank 模型插拔 (Model Agnostic)**：
     - Embedding 模型与 Rerank 模型同样采用统一接口封装；

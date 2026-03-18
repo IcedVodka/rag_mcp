@@ -232,20 +232,20 @@ smart-knowledge-hub/
 │   │   │   ├── __init__.py
 │   │   │   ├── base_llm.py              # LLM 抽象基类
 │   │   │   ├── llm_factory.py           # LLM 工厂
-│   │   │   ├── azure_llm.py             # Azure OpenAI 实现
-│   │   │   ├── openai_llm.py            # OpenAI 实现
-│   │   │   ├── ollama_llm.py            # Ollama 本地模型实现
-│   │   │   ├── deepseek_llm.py          # DeepSeek 实现
+│   │   │   ├── openai_llm.py            # OpenAI 格式实现
+│   │   │   ├── dashscope_llm.py         # DashScope 格式实现
+│   │   │   ├── anthropic_llm.py         # Anthropic 格式实现
 │   │   │   ├── base_vision_llm.py       # Vision LLM 抽象基类（支持图像输入）
-│   │   │   └── azure_vision_llm.py      # Azure Vision 实现 (GPT-4o/GPT-4-Vision)
+│   │   │   ├── openai_vision_llm.py     # OpenAI Vision 实现 (GPT-4o)
+│   │   │   ├── dashscope_vision_llm.py  # DashScope Vision 实现 (Qwen-VL)
+│   │   │   └── anthropic_vision_llm.py  # Anthropic Vision 实现 (Claude-3)
 │   │   │
 │   │   ├── embedding/                   # Embedding 抽象
 │   │   │   ├── __init__.py
 │   │   │   ├── base_embedding.py        # Embedding 抽象基类
 │   │   │   ├── embedding_factory.py     # Embedding 工厂
-│   │   │   ├── openai_embedding.py      # OpenAI Embedding 实现
-│   │   │   ├── azure_embedding.py       # Azure Embedding 实现
-│   │   │   └── ollama_embedding.py      # Ollama 本地模型实现
+│   │   │   ├── openai_embedding.py      # OpenAI 格式 Embedding 实现
+│   │   │   └── dashscope_embedding.py   # DashScope 格式 Embedding 实现（千问）
 │   │   │
 │   │   ├── splitter/                    # Splitter 抽象 (切分策略)
 │   │   │   ├── __init__.py
