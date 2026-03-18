@@ -7,10 +7,11 @@ Generates stable chunk IDs and ensures idempotent writes.
 """
 
 import hashlib
+import json
 from typing import List, Optional, Dict, Any
 from core.settings import Settings
 from core.types import ChunkRecord
-from libs.vector_store.base_vector_store import BaseVectorStore
+from libs.vector_store.base_vector_store import BaseVectorStore, VectorRecord
 from libs.vector_store.vector_store_factory import VectorStoreFactory
 
 
@@ -135,9 +136,48 @@ class VectorUpserter:
                 content_hash = self._compute_content_hash(record.text)
                 record.id = self.generate_chunk_id(source, index, content_hash)
         
+        # Convert ChunkRecords to VectorRecords
+        # Flatten metadata for ChromaDB compatibility (only primitive types)
+        vector_records = []
+        for record in records:
+            flat_metadata = {}
+            for key, value in record.metadata.items():
+                if isinstance(value, (str, int, float, bool)):
+                    flat_metadata[key] = value
+                elif value is None:
+                    flat_metadata[key] = None
+                elif isinstance(value, list):
+                    # Check if list contains only primitive types
+                    if all(isinstance(x, (str, int, float, bool)) for x in value):
+                        flat_metadata[key] = value
+                    else:
+                        # Complex list - convert to JSON string
+                        flat_metadata[key] = json.dumps(value, ensure_ascii=False)
+                elif isinstance(value, dict):
+                    # Flatten nested dict with dot notation
+                    for sub_key, sub_value in value.items():
+                        flat_key = f"{key}_{sub_key}"
+                        if isinstance(sub_value, (str, int, float, bool)):
+                            flat_metadata[flat_key] = sub_value
+                        elif sub_value is None:
+                            flat_metadata[flat_key] = None
+                        else:
+                            # Complex nested value - convert to JSON string
+                            flat_metadata[flat_key] = json.dumps(sub_value, ensure_ascii=False)
+                else:
+                    # Any other type - convert to string
+                    flat_metadata[key] = str(value)
+            
+            vector_records.append(VectorRecord(
+                id=record.id,
+                vector=record.dense_vector or [],
+                text=record.text,
+                metadata=flat_metadata
+            ))
+        
         # Upsert to vector store
         try:
-            self.vector_store.upsert(records, collection=collection)
+            self.vector_store.upsert(vector_records, collection=collection)
         except Exception as e:
             raise RuntimeError(f"Vector store upsert failed: {e}") from e
         

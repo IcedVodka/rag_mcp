@@ -104,6 +104,17 @@ class FileIntegrityChecker(ABC):
         pass
     
     @abstractmethod
+    def mark_processing(self, file_hash: str, file_path: str) -> None:
+        """
+        Mark a file as currently being processed.
+        
+        Args:
+            file_hash: SHA256 hash of the file
+            file_path: Original path of the file
+        """
+        pass
+    
+    @abstractmethod
     def mark_failed(self, file_hash: str, error_msg: str) -> None:
         """
         Mark a file as failed during processing.
@@ -259,6 +270,21 @@ class SQLiteIntegrityChecker(FileIntegrityChecker):
             (file_hash, str(file_path))
         )
         conn.commit()
+    
+    def mark_processing(self, file_hash: str, file_path: str) -> None:
+        """
+        Mark a file as currently being processed.
+        
+        This is optional and can be used to track in-progress files.
+        By default, this is a no-op as we only track success/failure.
+        
+        Args:
+            file_hash: SHA256 hash of the file
+            file_path: Original path of the file
+        """
+        # Optional: Can be implemented to track in-progress state
+        # For now, we only track success/failure
+        pass
     
     def mark_failed(self, file_hash: str, error_msg: str) -> None:
         """

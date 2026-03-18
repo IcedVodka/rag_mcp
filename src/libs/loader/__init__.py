@@ -1,12 +1,12 @@
 """Loader Module - Document loading and parsing."""
 
-from src.libs.loader.base_loader import (
+from libs.loader.base_loader import (
     BaseLoader,
     LoaderError,
     FileFormatError,
     ImageExtractionError,
 )
-from src.libs.loader.file_integrity import (
+from libs.loader.file_integrity import (
     FileIntegrityChecker,
     SQLiteIntegrityChecker,
     IngestionRecord,
@@ -14,7 +14,7 @@ from src.libs.loader.file_integrity import (
     HashCalculationError,
     StorageError,
 )
-from src.libs.loader.pdf_loader import PdfLoader
+from libs.loader.pdf_loader import PdfLoader
 
 __all__ = [
     # Base classes

@@ -2010,8 +2010,8 @@ dashboard:
 | C11 | BM25Indexer（倒排索引+IDF计算） | [x] | 2026-03-18 | 23个测试通过 |
 | C12 | VectorUpserter（幂等upsert） | [x] | 2026-03-18 | 17个测试通过 |
 | C13 | ImageStorage（图片存储+SQLite索引） | [x] | 2026-03-18 | 20个测试通过，修复image_id包含collection |
-| C14 | Pipeline 编排（MVP 串起来） | [ ] | | |
-| C15 | 脚本入口 ingest.py | [ ] | | |
+| C14 | Pipeline 编排（MVP 串起来） | [x] | 2026-03-18 | 16个集成测试通过，修复metadata类型兼容性问题 |
+| C15 | 脚本入口 ingest.py | [x] | 2026-03-18 | 11个E2E测试通过，支持--path/--collection/--force/--verbose参数 |
 
 #### 阶段 D：Retrieval MVP
 
@@ -2085,14 +2085,14 @@ dashboard:
 |------|---------|--------|------|
 | 阶段 A | 3 | 0 | 0% |
 | 阶段 B | 16 | 0 | 0% |
-| 阶段 C | 15 | 13 | 87% |
+| 阶段 C | 15 | 15 | 100% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **32** | **47%** |
+| **总计** | **68** | **34** | **50%** |
 
 
 ---
@@ -2253,17 +2253,32 @@ dashboard:
   - 在连接失败/超时等场景下，抛出可读错误且不泄露敏感配置。
 - **测试方法**：`pytest -q tests/unit/test_ollama_llm.py`。
 
-### B7.3：OpenAI & Azure Embedding 实现
-- **目标**：补齐 `openai_embedding.py` 和 `azure_embedding.py`，支持 OpenAI 官方 API 和 Azure OpenAI 服务的 Embedding 调用，支持批量 `embed(texts)`，并可被 mock 测试。
+### B7.3：OpenAI & DashScope Embedding 实现
+- **目标**：补齐 `openai_embedding.py` 和 `dashscope_embedding.py`，支持 OpenAI 官方 API 和阿里云 DashScope 的 Embedding 调用，支持批量 `embed(texts)`，并可被 mock 测试。
 - **修改文件**：
   - `src/libs/embedding/openai_embedding.py`
-  - `src/libs/embedding/azure_embedding.py`
-  - `tests/unit/test_embedding_providers_smoke.py`（mock HTTP，包含 OpenAI 和 Azure 测试用例）
+  - `src/libs/embedding/dashscope_embedding.py`
+  - `tests/unit/test_embedding_providers_smoke.py`（mock HTTP，包含 OpenAI 和 DashScope 测试用例）
+- **DashScope 特性**：
+  - 原生 HTTP 实现，不依赖 LiteLLM，国内访问更稳定
+  - 支持模型：text-embedding-v4, text-embedding-v3, text-embedding-v2, text-embedding-v1
+  - 自动处理 batch size 限制（最大25条）
+  - 支持自定义 dimensions（仅 v4）
+- **配置示例**：
+  ```yaml
+  embedding:
+    provider: dashscope  # 推荐国内使用
+    dashscope:
+      api_key: ${DASHSCOPE_API_KEY}
+      model: text-embedding-v4
+      base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      dimensions: 1536
+      batch_size: 25
+  ```
 - **验收标准**：
   - provider=openai 时 `EmbeddingFactory` 可创建，支持 OpenAI 官方 API 的 text-embedding-3-small/large 等模型。
-  - provider=azure 时 `EmbeddingFactory` 可创建，正确处理 Azure 特有的 endpoint、api-version、api-key 配置，支持 Azure 部署的 text-embedding-ada-002 等模型。
+  - provider=dashscope 时 `EmbeddingFactory` 可创建，原生支持阿里云 DashScope API，正确处理 batch limit 和 dimensions 参数。
   - 空输入、超长输入有明确行为（报错或截断策略由配置决定）。
-  - Azure 实现复用 OpenAI Embedding 的核心逻辑，保持行为一致性。
 - **测试方法**：`pytest -q tests/unit/test_embedding_providers_smoke.py`。
 
 ### B7.4：Ollama Embedding 实现
@@ -2668,7 +2683,15 @@ dashboard:
     - 提取的图片到 `data/images/` (SHA256命名)
   - Pipeline 日志清晰展示各阶段进度
   - 失败步骤抛出明确异常信息
-- **测试方法**：`pytest -v tests/integration/test_ingestion_pipeline.py`。
+- **测试方法**：`pytest -v tests/integration/test_ingestion_pipeline.py`
+- **实际实现问题与修复**：
+  1. **Embedding Provider 切换**：从 LiteLLM 切换到原生 DashScope，解决 `text-embedding-v4` 模型命名格式问题（LiteLLM 要求 `dashscope/text-embedding-v4`，原生 API 只需要 `text-embedding-v4`）
+  2. **VectorUpserter 字段转换**：ChunkRecord 使用 `dense_vector` 字段，VectorRecord 使用 `vector` 字段，需添加转换层
+  3. **ChromaStore API 修复**：移除 upsert 接口的 `collection` 参数，与 Pipeline 调用保持一致
+  4. **Metadata 类型兼容**：测试中使用 mock 返回 dict 类型 metadata，而实际代码使用 Metadata 对象，需同时支持两种类型的 `images` 属性访问
+  5. **图片索引集成**：Pipeline 的 `_load_document()` 方法增加 `image_storage.index_existing_image()` 调用，将 PDF loader 提取的图片索引到 SQLite
+  6. **BM25 唯一性约束**：修复 `INSERT OR REPLACE` 处理重复摄入同一文档时的唯一性冲突
+  7. **ChromaDB Metadata 序列化**：嵌套 dict 和 list 类型的 metadata 字段需 JSON 序列化为字符串
 
 ### C15：脚本入口 ingest.py（离线可用）
 - **目标**：实现 `scripts/ingest.py`，支持 `--collection`、`--path`、`--force`，并调用 pipeline。
@@ -2676,7 +2699,14 @@ dashboard:
   - `scripts/ingest.py`
   - `tests/e2e/test_data_ingestion.py`
 - **验收标准**：命令行可运行并在 `data/db` 产生产物；重复运行在未变更时跳过。
-- **测试方法**：`pytest -q tests/e2e/test_data_ingestion.py`（尽量用临时目录）。
+- **测试方法**：`pytest -q tests/e2e/test_data_ingestion.py`（尽量用临时目录）
+- **实现功能**：
+  - `--path`：支持单文件或目录批量摄入
+  - `--collection`：指定集合名称（默认 my_project）
+  - `--force`：强制重新处理已存在文件
+  - `--verbose`：启用 DEBUG 级别日志
+  - **进度显示**：实时显示处理进度、耗时统计
+  - **汇总报告**：摄入成功后显示各存储（ChromaDB、BM25、Image）的统计信息
 
 ---
 

@@ -12,9 +12,9 @@ import re
 from pathlib import Path
 from typing import Optional, Union
 
-from src.core.types import Document, DocumentMetadata, ImageInfo
-from src.libs.loader.base_loader import BaseLoader, LoaderError
-from src.libs.loader.file_integrity import FileIntegrityChecker
+from core.types import Document, DocumentMetadata, ImageInfo
+from libs.loader.base_loader import BaseLoader, LoaderError
+from libs.loader.file_integrity import FileIntegrityChecker
 
 logger = logging.getLogger(__name__)
 

@@ -5,9 +5,9 @@ Embedding Factory - Provider-Agnostic Embedding Creation
 Creates appropriate embedding instances based on configuration.
 
 Provider options:
-- "litellm": Recommended - Unified interface via LiteLLM
-- "openai": Legacy - Direct OpenAI API implementation
-- "dashscope": Legacy - Direct DashScope API implementation
+- "dashscope": Recommended for China - Native DashScope implementation
+- "openai": Native OpenAI API implementation
+- "litellm": Unified interface via LiteLLM (for multi-provider scenarios)
 """
 
 from typing import Optional, Any
@@ -43,30 +43,33 @@ class EmbeddingFactory:
         """
         provider = settings.embedding.provider
         
-        # Recommended: LiteLLM unified provider
-        if provider == "litellm":
-            from .litellm_embedding import LiteLLMEmbedding
-            config = settings.embedding.litellm
-            return LiteLLMEmbedding(config)
+        # Recommended for China: Native DashScope implementation
+        if provider == "dashscope":
+            from .dashscope_embedding import DashScopeEmbedding
+            config = getattr(settings.embedding, "dashscope", {})
+            return DashScopeEmbedding(config)
         
-        # Legacy: Direct provider implementations
+        # Native OpenAI implementation
         elif provider == "openai":
             from .openai_embedding import OpenAIEmbedding
             config = getattr(settings.embedding, "openai", {})
             return OpenAIEmbedding(config)
-        elif provider == "dashscope":
-            from .dashscope_embedding import DashScopeEmbedding
-            config = getattr(settings.embedding, "dashscope", {})
-            return DashScopeEmbedding(config)
+        
+        # LiteLLM unified provider (for multi-provider scenarios)
+        elif provider == "litellm":
+            from .litellm_embedding import LiteLLMEmbedding
+            config = settings.embedding.litellm
+            return LiteLLMEmbedding(config)
+        
         elif provider == "anthropic":
             raise ValueError(
                 "Anthropic does not provide embedding services. "
-                "Please use 'litellm', 'openai' or 'dashscope' as the embedding provider."
+                "Please use 'dashscope' (China), 'openai', or 'litellm' as the embedding provider."
             )
         else:
             raise ValueError(
                 f"Unknown embedding provider: {provider}. "
-                f"Supported: litellm, openai, dashscope"
+                f"Supported: dashscope (recommended for China), openai, litellm"
             )
 
 

@@ -206,6 +206,64 @@ class ImageStorage:
         
         return record
     
+    def index_existing_image(
+        self,
+        image_path: str,
+        image_id: str,
+        doc_hash: str,
+        collection: str = "default",
+        page_num: Optional[int] = None
+    ) -> ImageRecord:
+        """
+        Index an already-existing image file without copying it.
+        
+        Use this when the image is already saved to the filesystem
+        (e.g., by PDF loader) and just needs to be indexed.
+        
+        Args:
+            image_path: Path to the existing image file
+            image_id: Unique image identifier
+            doc_hash: Hash of the parent document
+            collection: Collection/namespace for the image
+            page_num: Page number in the source document
+            
+        Returns:
+            ImageRecord with storage details
+            
+        Raises:
+            FileNotFoundError: If image doesn't exist
+        """
+        path = Path(image_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Image not found: {image_path}")
+        
+        # Get image dimensions
+        try:
+            with Image.open(path) as img:
+                width, height = img.size
+                mime_type = f"image/{img.format.lower()}" if img.format else "image/png"
+        except Exception:
+            width, height = None, None
+            mime_type = "image/png"
+        
+        # Create record
+        record = ImageRecord(
+            image_id=image_id,
+            file_path=str(path.absolute()),
+            collection=collection,
+            doc_hash=doc_hash,
+            page_num=page_num,
+            width=width,
+            height=height,
+            mime_type=mime_type,
+            created_at=datetime.now()
+        )
+        
+        # Save to index
+        self._save_to_index(record)
+        
+        return record
+    
     def _save_to_index(self, record: ImageRecord) -> None:
         """Save image record to SQLite index."""
         conn = sqlite3.connect(str(self.db_path))

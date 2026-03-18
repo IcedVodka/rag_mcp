@@ -219,11 +219,19 @@ class DocumentChunker:
         Returns:
             List of ImageInfo objects for the referenced images
         """
-        if not document.metadata.images:
+        # Handle both dict and Metadata object types
+        images = []
+        if document.metadata:
+            if hasattr(document.metadata, 'images'):
+                images = document.metadata.images
+            elif isinstance(document.metadata, dict):
+                images = document.metadata.get('images', [])
+        
+        if not images:
             return []
         
         # Build lookup from image ID to ImageInfo
-        image_lookup = {img.id: img for img in document.metadata.images}
+        image_lookup = {img.id: img for img in images}
         
         # Get images in the order they appear in the references
         chunk_images = []

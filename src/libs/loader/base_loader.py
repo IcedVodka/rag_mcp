@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union
 
-from src.core.types import Document
+from core.types import Document
 
 
 class BaseLoader(ABC):

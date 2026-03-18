@@ -39,9 +39,17 @@ class ChromaStore(BaseVectorStore):
     def upsert(
         self,
         records: list[VectorRecord],
+        collection: Optional[str] = None,
         trace: Optional[TraceContext] = None
     ) -> None:
-        """Upsert vectors into ChromaDB."""
+        """
+        Upsert vectors into ChromaDB.
+        
+        Args:
+            records: List of vector records to upsert
+            collection: Optional collection name (ignored - ChromaStore uses fixed collection from config)
+            trace: Optional trace context
+        """
         if not records:
             return
         

@@ -51,6 +51,7 @@ class BaseVectorStore(ABC):
     def upsert(
         self,
         records: list[VectorRecord],
+        collection: Optional[str] = None,
         trace: Optional[TraceContext] = None
     ) -> None:
         """
@@ -58,6 +59,7 @@ class BaseVectorStore(ABC):
         
         Args:
             records: List of vector records to upsert
+            collection: Optional collection name (for multi-tenant stores)
             trace: Optional trace context
             
         Raises:

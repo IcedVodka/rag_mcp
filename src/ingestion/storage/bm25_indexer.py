@@ -234,7 +234,8 @@ class BM25Indexer:
             )
             for posting in info.postings:
                 cursor.execute(
-                    "INSERT INTO postings (term, chunk_id, tf, doc_length, source) VALUES (?, ?, ?, ?, ?)",
+                    """INSERT OR REPLACE INTO postings 
+                       (term, chunk_id, tf, doc_length, source) VALUES (?, ?, ?, ?, ?)""",
                     (term, posting.chunk_id, posting.tf, posting.doc_length, posting.source)
                 )
         

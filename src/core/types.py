@@ -157,7 +157,16 @@ class Document:
             True if all placeholders have metadata entries
         """
         placeholder_ids = set(self.get_image_placeholders())
-        metadata_ids = {img.id for img in self.metadata.images}
+        
+        # Handle both dict and Metadata object types
+        images = []
+        if self.metadata:
+            if hasattr(self.metadata, 'images'):
+                images = self.metadata.images
+            elif isinstance(self.metadata, dict):
+                images = self.metadata.get('images', [])
+        
+        metadata_ids = {img.id for img in images}
         return placeholder_ids.issubset(metadata_ids)
 
 

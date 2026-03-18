@@ -80,3 +80,5 @@ dmypy.json
 
 # pyenv
 .python-version
+
+docs/

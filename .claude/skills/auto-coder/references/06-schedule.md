@@ -158,14 +158,14 @@
 |------|---------|--------|------|
 | 阶段 A | 3 | 0 | 0% |
 | 阶段 B | 16 | 0 | 0% |
-| 阶段 C | 15 | 13 | 87% |
+| 阶段 C | 15 | 15 | 100% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **32** | **47%** |
+| **总计** | **68** | **34** | **50%** |
 
 
 ---
@@ -326,17 +326,32 @@
   - 在连接失败/超时等场景下，抛出可读错误且不泄露敏感配置。
 - **测试方法**：`pytest -q tests/unit/test_ollama_llm.py`。
 
-### B7.3：OpenAI & Azure Embedding 实现
-- **目标**：补齐 `openai_embedding.py` 和 `azure_embedding.py`，支持 OpenAI 官方 API 和 Azure OpenAI 服务的 Embedding 调用，支持批量 `embed(texts)`，并可被 mock 测试。
+### B7.3：OpenAI & DashScope Embedding 实现
+- **目标**：补齐 `openai_embedding.py` 和 `dashscope_embedding.py`，支持 OpenAI 官方 API 和阿里云 DashScope 的 Embedding 调用，支持批量 `embed(texts)`，并可被 mock 测试。
 - **修改文件**：
   - `src/libs/embedding/openai_embedding.py`
-  - `src/libs/embedding/azure_embedding.py`
-  - `tests/unit/test_embedding_providers_smoke.py`（mock HTTP，包含 OpenAI 和 Azure 测试用例）
+  - `src/libs/embedding/dashscope_embedding.py`
+  - `tests/unit/test_embedding_providers_smoke.py`（mock HTTP，包含 OpenAI 和 DashScope 测试用例）
+- **DashScope 特性**：
+  - 原生 HTTP 实现，不依赖 LiteLLM，国内访问更稳定
+  - 支持模型：text-embedding-v4, text-embedding-v3, text-embedding-v2, text-embedding-v1
+  - 自动处理 batch size 限制（最大25条）
+  - 支持自定义 dimensions（仅 v4）
+- **配置示例**：
+  ```yaml
+  embedding:
+    provider: dashscope  # 推荐国内使用
+    dashscope:
+      api_key: ${DASHSCOPE_API_KEY}
+      model: text-embedding-v4
+      base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      dimensions: 1536
+      batch_size: 25
+  ```
 - **验收标准**：
   - provider=openai 时 `EmbeddingFactory` 可创建，支持 OpenAI 官方 API 的 text-embedding-3-small/large 等模型。
-  - provider=azure 时 `EmbeddingFactory` 可创建，正确处理 Azure 特有的 endpoint、api-version、api-key 配置，支持 Azure 部署的 text-embedding-ada-002 等模型。
+  - provider=dashscope 时 `EmbeddingFactory` 可创建，原生支持阿里云 DashScope API，正确处理 batch limit 和 dimensions 参数。
   - 空输入、超长输入有明确行为（报错或截断策略由配置决定）。
-  - Azure 实现复用 OpenAI Embedding 的核心逻辑，保持行为一致性。
 - **测试方法**：`pytest -q tests/unit/test_embedding_providers_smoke.py`。
 
 ### B7.4：Ollama Embedding 实现

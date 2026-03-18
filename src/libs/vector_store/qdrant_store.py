@@ -5,7 +5,7 @@ Qdrant Store - Qdrant Vector Store Implementation (Placeholder)
 Uses Qdrant for vector storage and retrieval.
 """
 
-from typing import Optional, Any
+from typing import Optional, Any  # noqa: F401
 
 from core.trace.trace_context import TraceContext
 from .base_vector_store import BaseVectorStore, VectorRecord, QueryResult, VectorStoreError
@@ -29,6 +29,7 @@ class QdrantStore(BaseVectorStore):
     def upsert(
         self,
         records: list[VectorRecord],
+        collection: Optional[str] = None,
         trace: Optional[TraceContext] = None
     ) -> None:
         """Upsert vectors."""

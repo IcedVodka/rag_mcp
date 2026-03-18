@@ -17,7 +17,7 @@ llm:
   # 支持模型格式: "provider/model" 或直接 "model_name"
   # 示例: "gpt-4o", "claude-3-5-sonnet-20241022", "gemini/gemini-pro", "groq/llama3-8b-8192"
   litellm:
-    model: claude-3-5-sonnet-20241022  # 或 gpt-4o, gemini/gemini-pro
+    model: ${ANTHROPIC_MODEL} # 或 gpt-4o, gemini/gemini-pro
     api_key: ${ANTHROPIC_API_KEY}  # 根据模型自动选择对应 API key
     base_url: null  # 可选，用于自定义端点或本地模型
     timeout: 60
@@ -53,8 +53,8 @@ llm:
 # ==================== Vision LLM 配置 ====================
 vision_llm:
   # Provider: litellm (推荐), openai, dashscope, anthropic
-  provider: litellm
-  enabled: false
+  provider: openai
+  enabled: true
   
   # LiteLLM 配置 (推荐)
   litellm:
@@ -66,9 +66,9 @@ vision_llm:
     max_retries: 3
   
   openai:
-    api_key: ${OPENAI_API_KEY}
-    model: gpt-4o
-    base_url: https://api.openai.com/v1
+    api_key: ${DASHSCOPE_API_KEY}
+    model: qwen3.5-flash
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
     max_image_size: 2048
     timeout: 30
     max_retries: 3
@@ -91,21 +91,33 @@ vision_llm:
 
 # ==================== Embedding 配置 ====================
 embedding:
-  # Provider: litellm (推荐), openai, dashscope
-  # litellm 支持 OpenAI, Azure, Cohere 等多个 embedding 提供商
-  provider: litellm
+  # Provider: dashscope (国内推荐), litellm, openai
+  # dashscope: 原生阿里云 DashScope 实现，国内访问稳定
+  # litellm: 统一接口，支持多提供商
+  provider: dashscope
   
-  # LiteLLM 配置 (推荐)
-  litellm:
-    model: text-embedding-v4  # OpenAI: text-embedding-3-small, DashScope: text-embedding-v4
+  # DashScope 原生配置（推荐国内使用）
+  # 支持模型: text-embedding-v4, text-embedding-v3, text-embedding-v2, text-embedding-v1
+  dashscope:
     api_key: ${DASHSCOPE_API_KEY}
-    base_url: null  # 可选
+    model: text-embedding-v4  # 无需 provider/ 前缀
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
     dimensions: 1536
-    batch_size: 25
+    batch_size: 25  # DashScope 限制单批次最多25条
     timeout: 60
     max_retries: 3
   
-  # OpenAI 格式配置
+  # LiteLLM 配置（国际多提供商场景）
+  litellm:
+    model: openai/text-embedding-3-small  # 格式: provider/model
+    api_key: ${OPENAI_API_KEY}
+    base_url: null
+    dimensions: 1536
+    batch_size: 100
+    timeout: 30
+    max_retries: 3
+  
+  # OpenAI 原生配置
   openai:
     api_key: ${OPENAI_API_KEY}
     model: text-embedding-3-small
@@ -113,16 +125,6 @@ embedding:
     dimensions: 1536
     batch_size: 100
     timeout: 30
-    max_retries: 3
-  
-  # DashScope 格式配置
-  dashscope:
-    api_key: ${DASHSCOPE_API_KEY}
-    model: text-embedding-v4
-    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
-    dimensions: 1536
-    batch_size: 25  # DashScope 限制单批次最多25条
-    timeout: 60
     max_retries: 3
 
 # ==================== Vector Store 配置 ====================

@@ -142,6 +142,8 @@ class RerankerSettings:
 class IngestionSettings:
     """Ingestion pipeline configuration settings."""
     batch_size: int = 32
+    encode_dense: bool = True
+    encode_sparse: bool = True
     integrity_check: dict[str, Any] = field(default_factory=dict)
     images: dict[str, Any] = field(default_factory=dict)
     chunk_refiner: dict[str, Any] = field(default_factory=dict)

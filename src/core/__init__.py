@@ -1,6 +1,6 @@
 """Core Layer - Business logic and domain models."""
 
-from src.core.types import (
+from core.types import (
     Document,
     DocumentMetadata,
     Chunk,
