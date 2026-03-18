@@ -17,11 +17,11 @@
 鉴于 AI 技术的快速演进，本项目在架构设计上追求**极致的灵活性**，拒绝与特定模型或供应商强绑定。**整个系统**（不仅是 RAG 链路）的每一个核心环节均定义了抽象接口，支持"乐高积木式"的自由替换与组合：
 
 - **LLM 调用层插拔 (LLM Provider Agnostic)**：
-    - 核心推理 LLM 通过统一的抽象接口封装，支持**三种 API 格式**无缝切换：
-        - **OpenAI 格式**：兼容 OpenAI、Groq、本地模型等；
-        - **DashScope 格式**：阿里云 DashScope API（通义千问系列）；
-        - **Anthropic 格式**：Anthropic API（Claude 系列）。
-    - 通过配置文件修改 `base_url` 和 `model` 即可适配其他厂商，**零代码修改**即可完成 LLM 迁移，便于成本优化、隐私合规或 A/B 测试。
+    - 核心推理 LLM 通过统一的抽象接口封装，采用**混合架构设计**：
+        - **LiteLLM 统一接口（推荐）**：基于 [LiteLLM](https://github.com/BerriAI/litellm) 实现，支持 **100+ 提供商**（OpenAI、Anthropic、Gemini、Azure、Groq、Ollama 等），一行配置即可切换模型；
+        - **原生直连接口（向后兼容）**：保留 OpenAI、DashScope、Anthropic 的原生 SDK 实现，用于学习或特殊需求场景。
+    - 通过配置文件修改 `provider` 和 `model` 即可适配任意厂商，**零代码修改**即可完成 LLM 迁移，便于成本优化、隐私合规或 A/B 测试。
+    - LiteLLM 自动处理不同厂商的 API 格式差异、重试策略、错误转换，大幅降低维护成本。
 
 - **Embedding & Rerank 模型插拔 (Model Agnostic)**：
     - Embedding 模型与 Rerank 模型同样采用统一接口封装；

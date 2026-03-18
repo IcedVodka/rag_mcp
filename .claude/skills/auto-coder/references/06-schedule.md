@@ -70,19 +70,19 @@
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| C1 | 定义核心数据类型/契约（Document/Chunk/ChunkRecord） | [ ] | | |
-| C2 | 文件完整性检查（SHA256） | [ ] | | |
-| C3 | Loader 抽象基类与 PDF Loader | [ ] | | |
-| C4 | Splitter 集成（调用 Libs） | [ ] | | |
-| C5 | Transform 基类 + ChunkRefiner | [ ] | | |
-| C6 | MetadataEnricher | [ ] | | |
-| C7 | ImageCaptioner | [ ] | | |
-| C8 | DenseEncoder | [ ] | | |
-| C9 | SparseEncoder | [ ] | | |
-| C10 | BatchProcessor | [ ] | | |
-| C11 | BM25Indexer（倒排索引+IDF计算） | [ ] | | |
-| C12 | VectorUpserter（幂等upsert） | [ ] | | |
-| C13 | ImageStorage（图片存储+SQLite索引） | [ ] | | |
+| C1 | 定义核心数据类型/契约（Document/Chunk/ChunkRecord） | [x] | 2026-03-18 | 36个测试通过 |
+| C2 | 文件完整性检查（SHA256） | [x] | 2026-03-18 | 32个测试通过 |
+| C3 | Loader 抽象基类与 PDF Loader | [x] | 2026-03-18 | 40个测试通过 |
+| C4 | Splitter 集成（调用 Libs） | [x] | 2026-03-18 | 24个测试通过 |
+| C5 | Transform 基类 + ChunkRefiner | [x] | 2026-03-18 | 36个测试通过 |
+| C6 | MetadataEnricher | [x] | 2026-03-18 | 35个测试通过 |
+| C7 | ImageCaptioner | [x] | 2026-03-18 | 26个测试通过 |
+| C8 | DenseEncoder | [x] | 2026-03-18 | 16个测试通过 |
+| C9 | SparseEncoder | [x] | 2026-03-18 | 41个测试通过，添加jieba依赖 |
+| C10 | BatchProcessor | [x] | 2026-03-18 | 32个测试通过 |
+| C11 | BM25Indexer（倒排索引+IDF计算） | [x] | 2026-03-18 | 23个测试通过 |
+| C12 | VectorUpserter（幂等upsert） | [x] | 2026-03-18 | 17个测试通过 |
+| C13 | ImageStorage（图片存储+SQLite索引） | [x] | 2026-03-18 | 20个测试通过，修复image_id包含collection |
 | C14 | Pipeline 编排（MVP 串起来） | [ ] | | |
 | C15 | 脚本入口 ingest.py | [ ] | | |
 
@@ -158,14 +158,14 @@
 |------|---------|--------|------|
 | 阶段 A | 3 | 0 | 0% |
 | 阶段 B | 16 | 0 | 0% |
-| 阶段 C | 15 | 0 | 0% |
+| 阶段 C | 15 | 13 | 87% |
 | 阶段 D | 7 | 0 | 0% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **0** | **0%** |
+| **总计** | **68** | **32** | **47%** |
 
 
 ---

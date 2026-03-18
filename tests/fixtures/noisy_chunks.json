@@ -1,0 +1,50 @@
+{
+  "typical_noise_scenario": {
+    "description": "综合噪声场景：包含页眉/页脚/多余空白",
+    "input": "Confidential Document\n\nPage 1 of 10\n\n\n\n   Introduction to Machine Learning   \n\n\n\nMachine learning is a subset of artificial intelligence.\n\n\n\n\n\nIt enables computers to learn from data.\n\nCopyright 2024 All Rights Reserved",
+    "expected_contains": ["Introduction to Machine Learning", "Machine learning is a subset", "enables computers to learn"],
+    "expected_not_contains": ["Confidential Document", "Page 1 of 10", "Copyright 2024"]
+  },
+  "ocr_errors": {
+    "description": "OCR 错误文本：常见字符误识别",
+    "input": "The 0CR techn0l0gy has impr0ved s1gn1ficantly. Art1f1cial 1ntell1gence and mach1ne learn1ng are transf0rming industr1es. Deep learn1ng uses neur0l netw0rks.",
+    "expected_contains": ["OCR", "technology", "Artificial", "intelligence"],
+    "ocr_fixes": ["0CR->OCR", "techn0l0gy->technology", "s1gn1ficantly->significantly"]
+  },
+  "page_header_footer": {
+    "description": "页眉页脚模式",
+    "input": "Chapter 3: Advanced Topics - Smart Knowledge Hub\n\nThis chapter discusses advanced retrieval techniques.\n\nSmart Knowledge Hub - Page 45",
+    "expected_contains": ["Advanced Topics", "advanced retrieval techniques"],
+    "expected_not_contains": ["Chapter 3:", "Smart Knowledge Hub", "Page 45"]
+  },
+  "excessive_whitespace": {
+    "description": "多余空白和换行",
+    "input": "First paragraph.\n\n\n\n\n\nSecond paragraph after many newlines.\n\n\n   Third paragraph with indentation.\n\n\n\n\nFinal paragraph.",
+    "expected_contains": ["First paragraph.", "Second paragraph", "Third paragraph", "Final paragraph."],
+    "max_consecutive_newlines": 2
+  },
+  "format_markers": {
+    "description": "HTML/Markdown 标记",
+    "input": "<h1>Title</h1><p>This is a <strong>bold</strong> statement with <em>emphasis</em>.</p><br/><br/>New line here. <!-- This is a comment -->",
+    "expected_contains": ["Title", "bold", "emphasis", "New line here"],
+    "expected_not_contains": ["<h1>", "</h1>", "<p>", "</p>", "<strong>", "</strong>", "<em>", "</em>", "<br/>", "<!--"]
+  },
+  "clean_text": {
+    "description": "干净文本（验证不过度清理）",
+    "input": "This is a clean paragraph of text. It has proper formatting and spacing. No excessive noise or artifacts are present here.",
+    "expected_contains": ["clean paragraph", "proper formatting", "No excessive noise"],
+    "should_preserve_structure": true
+  },
+  "code_blocks": {
+    "description": "代码块（验证保留内部格式）",
+    "input": "Here is a Python example:\n\n```python\ndef hello_world():\n    print(\"Hello, World!\")\n    return True\n```\n\nAnd some inline `code` here.",
+    "expected_contains": ["def hello_world():", "print(\"Hello, World!\")", "return True", "inline `code`"],
+    "should_preserve_indentation": true
+  },
+  "mixed_noise": {
+    "description": "真实混合场景",
+    "input": "Internal Use Only\n\nAPI Documentation v2.0\n\n\n\n## Authentication\n\n\n\nThe API uses <b>OAuth 2.0</b> for authentication.<!-- Implementation detail -->\n\n\n\nClient ID: your_client_id\nClient Secret: your_client_secret\n\n\n\nPage 12 of 25\n\nCopyright Acme Corp 2024",
+    "expected_contains": ["Authentication", "OAuth 2.0", "Client ID", "Client Secret"],
+    "expected_not_contains": ["Internal Use Only", "API Documentation v2.0", "Page 12", "Copyright Acme", "<b>", "</b>", "<!--"]
+  }
+}

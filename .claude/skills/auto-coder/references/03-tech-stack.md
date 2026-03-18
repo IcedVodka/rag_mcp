@@ -315,12 +315,30 @@ MCP 协议的 Tool 返回格式支持多种内容类型（`content` 数组），
 | **Ollama / vLLM (本地)** | 完全离线、隐私敏感、无 API 成本 | `provider: ollama`, `base_url`, `model` |
 
 - **技术选型建议**：
-	- 本项目采用自研的 `BaseLLM` / `BaseEmbedding` 抽象基类，配合工厂模式（`llm_factory.py` / `embedding_factory.py`）实现统一调用接口。已内置 Azure OpenAI、OpenAI、Ollama、DeepSeek 四种 Provider 适配。
-	- 对于其他 Provider，可通过 **OpenAI-Compatible 模式**接入（设置自定义 `api_base`），或实现 `BaseLLM` 接口并在工厂中注册。
+	- 本项目采用**混合架构设计**：
+		1. **LiteLLM 统一适配层（推荐）**：通过 `LiteLLMLLM` / `LiteLLMEmbedding` 适配器，基于 [LiteLLM](https://github.com/BerriAI/litellm) 库实现统一接口，支持 100+ 提供商（OpenAI、Anthropic、Gemini、Azure、Groq、Ollama、Cohere 等）。LiteLLM 自动处理不同厂商的 API 格式转换、重试策略、错误转换。
+		2. **原生直连层（向后兼容）**：保留 `OpenAILLM`、`DashScopeLLM`、`AnthropicLLM` 等原生实现，用于学习目的或特殊需求场景。
+	- **工厂路由**：`LLMFactory` / `EmbeddingFactory` 根据 `settings.yaml` 中的 `provider` 字段自动选择实现，支持 `litellm`、`openai`、`dashscope`、`anthropic` 四种选项。
 
-	- 对于企业级需求，可在其基础上增加统一的 **重试、限流、日志** 中间层，提升生产可靠性，但本项目暂不实现，这里仅提供思路。
-	- **Vision LLM 扩展**：针对图像描述生成（Image Captioning）需求，系统扩展了 `BaseVisionLLM` 接口，支持文本+图片的多模态输入。当前实现：
-		- **Azure OpenAI Vision**（GPT-4o/GPT-4-Vision）：企业级合规部署，支持复杂图表解析，与 Azure 生态深度集成。
+	**LiteLLM 配置示例**：
+	```yaml
+	llm:
+	  provider: litellm
+	  litellm:
+	    model: claude-3-5-sonnet-20241022  # 支持 gpt-4o, gemini/gemini-pro, groq/llama3-8b 等
+	    api_key: ${ANTHROPIC_API_KEY}
+	    timeout: 60
+	    max_retries: 3
+	```
+
+	**LiteLLM 优势**：
+	- **一行切换模型**：修改 `model` 字段即可切换提供商，无需更改代码
+	- **自动格式转换**：处理不同厂商的 message 格式、function calling、streaming 差异
+	- **内置可靠性**：自动重试、超时处理、错误转换
+	- **100+ 提供商支持**：覆盖几乎所有主流 LLM 服务
+
+	- 对于企业级需求，LiteLLM 本身支持 **Fallback、Load Balance、Rate Limit** 等高级特性，生产环境可直接使用。
+	- **Vision LLM 扩展**：`LiteLLMLLM` 同时支持 Vision 模型（如 GPT-4o、Claude-3-Sonnet），无需额外适配器。如需原生实现，保留 `OpenAIVisionLLM`、`DashScopeVisionLLM`、`AnthropicVisionLLM`。
 
 #### 3.3.3 检索策略抽象
 

@@ -78,6 +78,7 @@ def _substitute_env_vars(value: Any) -> Any:
 class LLMSettings:
     """LLM configuration settings."""
     provider: str
+    litellm: dict[str, Any] = field(default_factory=dict)
     openai: dict[str, Any] = field(default_factory=dict)
     dashscope: dict[str, Any] = field(default_factory=dict)
     anthropic: dict[str, Any] = field(default_factory=dict)
@@ -88,6 +89,7 @@ class VisionLLMSettings:
     """Vision LLM configuration settings."""
     provider: str
     enabled: bool = False
+    litellm: dict[str, Any] = field(default_factory=dict)
     openai: dict[str, Any] = field(default_factory=dict)
     dashscope: dict[str, Any] = field(default_factory=dict)
     anthropic: dict[str, Any] = field(default_factory=dict)
@@ -97,6 +99,7 @@ class VisionLLMSettings:
 class EmbeddingSettings:
     """Embedding configuration settings."""
     provider: str
+    litellm: dict[str, Any] = field(default_factory=dict)
     openai: dict[str, Any] = field(default_factory=dict)
     dashscope: dict[str, Any] = field(default_factory=dict)
     anthropic: dict[str, Any] = field(default_factory=dict)
@@ -144,6 +147,7 @@ class IngestionSettings:
     chunk_refiner: dict[str, Any] = field(default_factory=dict)
     metadata_enricher: dict[str, Any] = field(default_factory=dict)
     image_captioner: dict[str, Any] = field(default_factory=dict)
+    sparse_encoder: dict[str, Any] = field(default_factory=lambda: {"tokenizer": "jieba", "stopwords": True})
 
 
 @dataclass

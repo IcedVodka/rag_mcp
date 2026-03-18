@@ -198,6 +198,8 @@ reranker:
 ingestion:
   # Batch processing
   batch_size: 32
+  encode_dense: true
+  encode_sparse: true
   
   # File integrity check
   integrity_check:
@@ -226,6 +228,11 @@ ingestion:
   image_captioner:
     enabled: false
     prompt_path: config/prompts/image_captioning.txt
+  
+  # Sparse encoder configuration (BM25)
+  sparse_encoder:
+    tokenizer: jieba  # or simple
+    stopwords: true   #是否启用停用词过滤
 
 # ==================== BM25 配置 ====================
 bm25:

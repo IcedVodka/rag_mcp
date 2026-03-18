@@ -37,6 +37,7 @@ dependencies = [
     "langchain>=0.2.0",
     "langchain-text-splitters>=0.2.0",
     "litellm>=1.60.0",
+    "jieba>=0.42.0",
 ]
 
 [project.optional-dependencies]
@@ -60,6 +61,7 @@ query = "scripts.query:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
