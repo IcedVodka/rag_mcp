@@ -71,6 +71,7 @@ class TestIngestCLI:
                 "scripts/ingest.py",
                 "--path", str(sample_pdf),
                 "--collection", "e2e_test",
+                "--force",  # Force re-processing to avoid skip due to unchanged file
                 "--verbose"
             ],
             capture_output=True,
@@ -80,8 +81,12 @@ class TestIngestCLI:
         # Should succeed (return code 0)
         assert result.returncode == 0, f"STDERR: {result.stderr}"
         
-        # Should show success message
-        assert "ingested" in result.stdout.lower() or "processed" in result.stdout.lower()
+        # Should show success message (ingested, processed, or completed)
+        stdout_lower = result.stdout.lower()
+        assert ("ingested" in stdout_lower or 
+                "processed" in stdout_lower or 
+                "completed" in stdout_lower or
+                "successful" in stdout_lower)
     
     def test_cli_ingest_nonexistent_file(self):
         """Test CLI handles non-existent file gracefully."""

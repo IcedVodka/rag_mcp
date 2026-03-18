@@ -310,3 +310,81 @@ class ChunkRecord:
         if self.sparse_vector is not None:
             dims["sparse"] = len(self.sparse_vector)
         return dims
+
+
+@dataclass
+class RetrievalResult:
+    """
+    Retrieval result from sparse or dense retrieval.
+    
+    Represents a retrieved chunk with its score and metadata.
+    Used as the output format for all retrievers in the query engine.
+    
+    Attributes:
+        chunk_id: Unique chunk identifier
+        text: Chunk text content
+        score: Retrieval score (BM25 score or similarity score)
+        metadata: Chunk metadata
+    """
+    chunk_id: str
+    text: str
+    score: float
+    metadata: dict[str, Any] = field(default_factory=dict)
+    
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "chunk_id": self.chunk_id,
+            "text": self.text,
+            "score": self.score,
+            "metadata": self.metadata.copy(),
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "RetrievalResult":
+        """Create RetrievalResult from dictionary."""
+        return cls(
+            chunk_id=data["chunk_id"],
+            text=data["text"],
+            score=data["score"],
+            metadata=data.get("metadata", {}).copy()
+        )
+
+
+@dataclass
+class RetrievalResult:
+    """
+    Retrieval result from vector search.
+    
+    Represents a single retrieved chunk with its similarity score,
+    text content, and metadata.
+    
+    Attributes:
+        chunk_id: Unique identifier of the retrieved chunk
+        score: Similarity score (distance or cosine similarity)
+        text: Retrieved text content
+        metadata: Additional metadata associated with the chunk
+    """
+    chunk_id: str
+    score: float
+    text: str
+    metadata: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary representation for serialization."""
+        return {
+            "chunk_id": self.chunk_id,
+            "score": self.score,
+            "text": self.text,
+            "metadata": self.metadata.copy(),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "RetrievalResult":
+        """Create RetrievalResult from dictionary."""
+        return cls(
+            chunk_id=data["chunk_id"],
+            score=data["score"],
+            text=data["text"],
+            metadata=data.get("metadata", {}).copy()
+        )

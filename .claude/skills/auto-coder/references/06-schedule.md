@@ -83,18 +83,18 @@
 | C11 | BM25Indexer（倒排索引+IDF计算） | [x] | 2026-03-18 | 23个测试通过 |
 | C12 | VectorUpserter（幂等upsert） | [x] | 2026-03-18 | 17个测试通过 |
 | C13 | ImageStorage（图片存储+SQLite索引） | [x] | 2026-03-18 | 20个测试通过，修复image_id包含collection |
-| C14 | Pipeline 编排（MVP 串起来） | [ ] | | |
-| C15 | 脚本入口 ingest.py | [ ] | | |
+| C14 | Pipeline 编排（MVP 串起来） | [x] | 2026-03-18 | 16个集成测试通过，修复metadata类型兼容性问题 |
+| C15 | 脚本入口 ingest.py | [x] | 2026-03-18 | 11个E2E测试通过，支持--path/--collection/--force/--verbose参数 |
 
 #### 阶段 D：Retrieval MVP
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| D1 | QueryProcessor（关键词提取 + filters） | [ ] | | |
-| D2 | DenseRetriever（调用 VectorStore.query） | [ ] | | |
-| D3 | SparseRetriever（BM25 查询） | [ ] | | |
-| D4 | RRF Fusion | [ ] | | |
-| D5 | HybridSearch 编排 | [ ] | | |
+| D1 | QueryProcessor（关键词提取 + filters） | [x] | 2026-03-18 | 29个测试通过，支持jieba分词+停用词过滤 |
+| D2 | DenseRetriever（调用 VectorStore.query） | [x] | 2026-03-18 | 9个测试通过，支持依赖注入 |
+| D3 | SparseRetriever（BM25 查询） | [x] | 2026-03-18 | 15个测试通过，集成VectorStore.get_by_ids |
+| D4 | RRF Fusion | [x] | 2026-03-18 | 26个测试通过，k参数可配置 |
+| D5 | HybridSearch 编排 | [x] | 2026-03-18 | 21个集成测试通过，支持降级策略 |
 | D6 | Reranker（Core 层编排 + Fallback） | [ ] | | |
 | D7 | 脚本入口 query.py（查询可用） | [ ] | | |
 
@@ -159,13 +159,13 @@
 | 阶段 A | 3 | 0 | 0% |
 | 阶段 B | 16 | 0 | 0% |
 | 阶段 C | 15 | 15 | 100% |
-| 阶段 D | 7 | 0 | 0% |
+| 阶段 D | 7 | 5 | 71% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **34** | **50%** |
+| **总计** | **68** | **39** | **57%** |
 
 
 ---
@@ -756,7 +756,15 @@
     - 提取的图片到 `data/images/` (SHA256命名)
   - Pipeline 日志清晰展示各阶段进度
   - 失败步骤抛出明确异常信息
-- **测试方法**：`pytest -v tests/integration/test_ingestion_pipeline.py`。
+- **测试方法**：`pytest -v tests/integration/test_ingestion_pipeline.py`
+- **实际实现问题与修复**：
+  1. **Embedding Provider 切换**：从 LiteLLM 切换到原生 DashScope，解决 `text-embedding-v4` 模型命名格式问题（LiteLLM 要求 `dashscope/text-embedding-v4`，原生 API 只需要 `text-embedding-v4`）
+  2. **VectorUpserter 字段转换**：ChunkRecord 使用 `dense_vector` 字段，VectorRecord 使用 `vector` 字段，需添加转换层
+  3. **ChromaStore API 修复**：移除 upsert 接口的 `collection` 参数，与 Pipeline 调用保持一致
+  4. **Metadata 类型兼容**：测试中使用 mock 返回 dict 类型 metadata，而实际代码使用 Metadata 对象，需同时支持两种类型的 `images` 属性访问
+  5. **图片索引集成**：Pipeline 的 `_load_document()` 方法增加 `image_storage.index_existing_image()` 调用，将 PDF loader 提取的图片索引到 SQLite
+  6. **BM25 唯一性约束**：修复 `INSERT OR REPLACE` 处理重复摄入同一文档时的唯一性冲突
+  7. **ChromaDB Metadata 序列化**：嵌套 dict 和 list 类型的 metadata 字段需 JSON 序列化为字符串
 
 ### C15：脚本入口 ingest.py（离线可用）
 - **目标**：实现 `scripts/ingest.py`，支持 `--collection`、`--path`、`--force`，并调用 pipeline。
@@ -764,7 +772,14 @@
   - `scripts/ingest.py`
   - `tests/e2e/test_data_ingestion.py`
 - **验收标准**：命令行可运行并在 `data/db` 产生产物；重复运行在未变更时跳过。
-- **测试方法**：`pytest -q tests/e2e/test_data_ingestion.py`（尽量用临时目录）。
+- **测试方法**：`pytest -q tests/e2e/test_data_ingestion.py`（尽量用临时目录）
+- **实现功能**：
+  - `--path`：支持单文件或目录批量摄入
+  - `--collection`：指定集合名称（默认 my_project）
+  - `--force`：强制重新处理已存在文件
+  - `--verbose`：启用 DEBUG 级别日志
+  - **进度显示**：实时显示处理进度、耗时统计
+  - **汇总报告**：摄入成功后显示各存储（ChromaDB、BM25、Image）的统计信息
 
 ---
 

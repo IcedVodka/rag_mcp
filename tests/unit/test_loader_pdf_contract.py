@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.core.types import Document, DocumentMetadata, ImageInfo
+from core.types import Document, DocumentMetadata, ImageInfo
 from src.libs.loader.base_loader import (
     BaseLoader,
     FileFormatError,

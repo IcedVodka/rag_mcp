@@ -2017,11 +2017,11 @@ dashboard:
 
 | 任务编号 | 任务名称 | 状态 | 完成日期 | 备注 |
 |---------|---------|------|---------|------|
-| D1 | QueryProcessor（关键词提取 + filters） | [ ] | | |
-| D2 | DenseRetriever（调用 VectorStore.query） | [ ] | | |
-| D3 | SparseRetriever（BM25 查询） | [ ] | | |
-| D4 | RRF Fusion | [ ] | | |
-| D5 | HybridSearch 编排 | [ ] | | |
+| D1 | QueryProcessor（关键词提取 + filters） | [x] | 2026-03-18 | 29个测试通过，支持jieba分词+停用词过滤 |
+| D2 | DenseRetriever（调用 VectorStore.query） | [x] | 2026-03-18 | 9个测试通过，支持依赖注入 |
+| D3 | SparseRetriever（BM25 查询） | [x] | 2026-03-18 | 15个测试通过，集成VectorStore.get_by_ids |
+| D4 | RRF Fusion | [x] | 2026-03-18 | 26个测试通过，k参数可配置 |
+| D5 | HybridSearch 编排 | [x] | 2026-03-18 | 21个集成测试通过，支持降级策略 |
 | D6 | Reranker（Core 层编排 + Fallback） | [ ] | | |
 | D7 | 脚本入口 query.py（查询可用） | [ ] | | |
 
@@ -2086,13 +2086,13 @@ dashboard:
 | 阶段 A | 3 | 0 | 0% |
 | 阶段 B | 16 | 0 | 0% |
 | 阶段 C | 15 | 15 | 100% |
-| 阶段 D | 7 | 0 | 0% |
+| 阶段 D | 7 | 5 | 71% |
 | 阶段 E | 6 | 0 | 0% |
 | 阶段 F | 5 | 0 | 0% |
 | 阶段 G | 6 | 0 | 0% |
 | 阶段 H | 5 | 0 | 0% |
 | 阶段 I | 5 | 0 | 0% |
-| **总计** | **68** | **34** | **50%** |
+| **总计** | **68** | **39** | **57%** |
 
 
 ---
