@@ -152,3 +152,84 @@ class ChromaStore(BaseVectorStore):
     def count(self) -> int:
         """Return the total number of vectors."""
         return self._collection.count()
+    
+    def get_collection_stats(self, collection_name: str) -> dict[str, Any]:
+        """
+        Get statistics for a specific collection.
+        
+        Args:
+            collection_name: Name of the collection
+            
+        Returns:
+            Dictionary with collection statistics:
+            - count: Number of vectors (chunks) in the collection
+            - exists: Whether the collection exists
+        """
+        try:
+            # Try to get the collection
+            collection = self._client.get_collection(name=collection_name)
+            return {
+                "count": collection.count(),
+                "exists": True
+            }
+        except Exception:
+            # Collection doesn't exist
+            return {
+                "count": 0,
+                "exists": False
+            }
+    
+    def list_collections(self) -> list[str]:
+        """
+        List all collection names in the ChromaDB instance.
+        
+        Returns:
+            List of collection names
+        """
+        try:
+            collections = self._client.list_collections()
+            return [c.name for c in collections]
+        except Exception as e:
+            raise VectorStoreError(f"Failed to list collections: {e}")
+    
+    def get_by_metadata(
+        self,
+        filters: dict[str, Any],
+        limit: Optional[int] = None,
+        trace: Optional[TraceContext] = None
+    ) -> list[dict[str, Any]]:
+        """
+        Get records by metadata filters.
+        
+        Args:
+            filters: Metadata filters (e.g., {"source": "example.pdf"})
+            limit: Maximum number of results to return
+            trace: Optional trace context
+            
+        Returns:
+            List of records (id, text, metadata)
+        """
+        if trace:
+            trace.record_stage(
+                name="vector_get_by_metadata",
+                provider="chroma",
+                details={"filters": filters, "limit": limit}
+            )
+        
+        try:
+            results = self._collection.get(
+                where=filters,
+                limit=limit
+            )
+            
+            records = []
+            for i, id_ in enumerate(results["ids"]):
+                records.append({
+                    "id": id_,
+                    "text": results["documents"][i] if results["documents"] else "",
+                    "metadata": results["metadatas"][i] if results["metadatas"] else {}
+                })
+            
+            return records
+        except Exception as e:
+            raise VectorStoreError(f"ChromaDB get_by_metadata failed: {e}")

@@ -315,45 +315,6 @@ class ChunkRecord:
 @dataclass
 class RetrievalResult:
     """
-    Retrieval result from sparse or dense retrieval.
-    
-    Represents a retrieved chunk with its score and metadata.
-    Used as the output format for all retrievers in the query engine.
-    
-    Attributes:
-        chunk_id: Unique chunk identifier
-        text: Chunk text content
-        score: Retrieval score (BM25 score or similarity score)
-        metadata: Chunk metadata
-    """
-    chunk_id: str
-    text: str
-    score: float
-    metadata: dict[str, Any] = field(default_factory=dict)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "chunk_id": self.chunk_id,
-            "text": self.text,
-            "score": self.score,
-            "metadata": self.metadata.copy(),
-        }
-    
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "RetrievalResult":
-        """Create RetrievalResult from dictionary."""
-        return cls(
-            chunk_id=data["chunk_id"],
-            text=data["text"],
-            score=data["score"],
-            metadata=data.get("metadata", {}).copy()
-        )
-
-
-@dataclass
-class RetrievalResult:
-    """
     Retrieval result from vector search.
     
     Represents a single retrieved chunk with its similarity score,
@@ -368,7 +329,7 @@ class RetrievalResult:
     chunk_id: str
     score: float
     text: str
-    metadata: dict[str, Any]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation for serialization."""
