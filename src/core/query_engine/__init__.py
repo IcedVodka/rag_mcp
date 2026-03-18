@@ -1,5 +1,6 @@
 """Query Engine - Search and retrieval orchestration."""
 
-from src.core.query_engine.hybrid_search import HybridSearch
+from core.query_engine.hybrid_search import HybridSearch
+from core.query_engine.reranker import CoreReranker, RerankResultInfo
 
-__all__ = ["HybridSearch"]
+__all__ = ["HybridSearch", "CoreReranker", "RerankResultInfo"]

@@ -14,9 +14,9 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Optional, Protocol
 
-from src.core.types import RetrievalResult
-from src.core.settings import Settings
-from src.core.trace.trace_context import TraceContext
+from core.types import RetrievalResult
+from core.settings import Settings
+from core.trace.trace_context import TraceContext
 
 logger = logging.getLogger(__name__)
 

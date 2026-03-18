@@ -21,8 +21,8 @@ import logging
 from typing import List
 from dataclasses import replace
 
-from src.core.types import RetrievalResult
-from src.core.settings import Settings
+from core.types import RetrievalResult
+from core.settings import Settings
 
 logger = logging.getLogger(__name__)
 
